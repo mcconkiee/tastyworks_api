@@ -20,6 +20,7 @@ class OrderType(Enum):
 class OrderPriceEffect(Enum):
     CREDIT = 'Credit'
     DEBIT = 'Debit'
+    UNKNOWN = 'Unknown'
 
 
 class OrderStatus(Enum):
@@ -95,13 +96,14 @@ class Order(Security):
     def from_dict(cls, input_dict: dict):
         """
         Parses an Order object from a dict.
-        """
-        details = OrderDetails(input_dict['underlying-symbol'])
-        details.price = Decimal(input_dict['price']) if 'price' in input_dict else None
-        details.price_effect = OrderPriceEffect(input_dict['price-effect'])
-        details.type = OrderType(input_dict['order-type'])
-        details.status = OrderStatus(input_dict['status'])
-        details.time_in_force = input_dict['time-in-force']
+        """        
+        print(f"from dict for : {input_dict}")
+        details = OrderDetails(input_dict.get('underlying-symbol'))
+        details.price = Decimal(input_dict.get('price',0.00))
+        details.price_effect = OrderPriceEffect(input_dict.get('price-effect',OrderPriceEffect.UNKNOWN))
+        details.type = OrderType(input_dict.get('order-type'))
+        details.status = OrderStatus(input_dict.get('status'))
+        details.time_in_force = input_dict.get('time-in-force')
         details.gtc_date = input_dict.get('gtc-date', None)
         return cls(order_details=details)
 
