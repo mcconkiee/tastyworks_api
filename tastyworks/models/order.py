@@ -4,6 +4,8 @@ from decimal import Decimal
 from enum import Enum
 from typing import List
 
+from numpy import delete
+
 import aiohttp
 from dataclasses import dataclass, field
 
@@ -96,7 +98,7 @@ class Order(Security):
     def from_dict(cls, input_dict: dict):
         """
         Parses an Order object from a dict.
-        """        
+        """          
         details = OrderDetails(input_dict.get('underlying-symbol'))
         details.price = Decimal(input_dict.get('price',0.00))
         details.price_effect = OrderPriceEffect(input_dict.get('price-effect',OrderPriceEffect.UNKNOWN))
@@ -120,10 +122,19 @@ class Order(Security):
         Returns:
             list(Order): A list of Orders
         """
+        
         if not session.logged_in:
             raise Exception('Tastyworks session not logged in.')
 
-        filters = kwargs
+        _filters = kwargs
+        filters = {}
+        for k, v in _filters.items():
+            if "_" in k:
+                nwkey = k.replace("_","-")
+                filters[nwkey] = v
+            else:
+                filters[k] = v
+        
         url = '{}/accounts/{}/orders'.format(
             session.API_url,
             account.account_number
@@ -131,16 +142,11 @@ class Order(Security):
         url = '{}?{}'.format(
             url,
             '&'.join([f'{k}={v}' for k, v in filters.items()])
-        )
-
-        res = []
+        )        
+        LOGGER.info(f"quiery url : {url}")
         async with aiohttp.request('GET', url, headers=session.get_request_headers()) as resp:
             if resp.status != 200:
                 raise Exception('Could not get current open orders')
-            data = (await resp.json())['data']['items']
-            for order_data in data:
-                order = cls.from_dict(order_data)
-                if not order.details.status.is_active():
-                    continue
-                res.append(order)
-        return res
+            data = (await resp.json())['data']['items']            
+            return data
+        return None
