@@ -97,7 +97,6 @@ class Order(Security):
         """
         Parses an Order object from a dict.
         """        
-        print(f"from dict for : {input_dict}")
         details = OrderDetails(input_dict.get('underlying-symbol'))
         details.price = Decimal(input_dict.get('price',0.00))
         details.price_effect = OrderPriceEffect(input_dict.get('price-effect',OrderPriceEffect.UNKNOWN))
