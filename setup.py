@@ -4,7 +4,7 @@ from setuptools import setup, find_packages
 REQUIRES = [
     'aiocometd',
     'aiohttp<4',
-    'dataclasses',
+    # 'dataclasses',
     'requests<3',
 ]
 
